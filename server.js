@@ -12,10 +12,11 @@ app.use(express.static('public'));
  
 /* ── DATABASE ────────────────────────────────────────────────── */
 const db = mysql.createConnection({
-  host:     process.env.DB_HOST || 'localhost',
-  user:     process.env.DB_USER || 'root',
+  host:     process.env.DB_HOST     || 'localhost',
+  port:     process.env.DB_PORT     || 3306,
+  user:     process.env.DB_USER     || 'root',
   password: process.env_DB_PASSWORD || 'your_new_password',       // your MySQL password
-  database: process.env.DB_NAME || 'fitfuel'
+  database: process.env.DB_NAME     || 'fitfuel'
 });
 db.connect(err => {
   if (err) { console.error('MySQL Error:', err); return; }
