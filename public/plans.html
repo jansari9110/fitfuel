@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Choose Plan | FitFuel</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+body{ min-height:100vh; background:#020617; color:white; }
+ 
+nav{
+  position:fixed; top:0; width:100%;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:18px 50px; background:rgba(2,6,23,0.85);
+  backdrop-filter:blur(12px); z-index:1000;
+}
+.logo{ font-size:22px; font-weight:700; }
+.logo span{ color:#22c55e; }
+nav a{ color:white; text-decoration:none; margin-left:20px; transition:0.3s; }
+nav a:hover{ color:#22c55e; }
+ 
+.page-hero{ padding:130px 10% 50px; text-align:center; }
+.page-hero h1{ font-size:40px; }
+.page-hero h1 span{ color:#22c55e; }
+.page-hero p{ opacity:0.75; margin-top:10px; }
+ 
+/* Login prompt */
+#login-prompt{
+  display:none; text-align:center; padding:25px;
+  background:rgba(34,197,94,0.08); border:1px solid #22c55e44;
+  border-radius:12px; max-width:480px; margin:0 auto 30px;
+}
+#login-prompt p{ margin-bottom:12px; opacity:0.85; }
+#login-prompt a{
+  padding:9px 28px; background:#22c55e; color:#020617;
+  border-radius:25px; font-weight:600; text-decoration:none;
+  margin:5px; display:inline-block;
+}
+#login-prompt a.outline{
+  background:transparent; border:2px solid #22c55e; color:#22c55e;
+}
+ 
+/* Current plan badge */
+#current-plan-box{ text-align:center; margin-bottom:20px; display:none; }
+#current-plan-box .badge{
+  display:inline-block; padding:8px 22px; border-radius:25px;
+  background:#22c55e22; border:1px solid #22c55e; color:#22c55e;
+  font-weight:600; font-size:14px;
+}
+ 
+/* Plan grid */
+.plans-section{ padding:10px 10% 100px; }
+.plan-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(280px,1fr)); gap:30px; max-width:1000px; margin:0 auto; }
+ 
+.plan-card{
+  background:rgba(255,255,255,0.05); backdrop-filter:blur(15px);
+  border:1px solid rgba(255,255,255,0.2); border-radius:20px;
+  padding:36px 30px; text-align:center; transition:0.4s; position:relative;
+}
+.plan-card:hover{ transform:translateY(-10px); box-shadow:0 20px 40px rgba(34,197,94,0.25); }
+.plan-card.featured{ border-color:#22c55e; box-shadow:0 0 40px rgba(34,197,94,0.3); }
+.plan-card.current-active{ border-color:#f59e0b; box-shadow:0 0 30px rgba(245,158,11,0.3); }
+ 
+.badge-top{
+  position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+  background:#22c55e; color:#020617; font-size:11px; font-weight:700;
+  padding:4px 16px; border-radius:20px; text-transform:uppercase; letter-spacing:1px;
+}
+.active-badge-top{
+  position:absolute; top:-14px; left:50%; transform:translateX(-50%);
+  background:#f59e0b; color:#020617; font-size:11px; font-weight:700;
+  padding:4px 16px; border-radius:20px; text-transform:uppercase;
+}
+ 
+.plan-icon{ font-size:40px; margin-bottom:10px; }
+.plan-card h3{ font-size:22px; color:#22c55e; margin-bottom:8px; }
+.plan-card.current-active h3{ color:#f59e0b; }
+.price{ font-size:36px; font-weight:700; margin:16px 0; }
+.price sub{ font-size:14px; opacity:0.7; }
+ 
+.features{ list-style:none; margin:18px 0 26px; text-align:left; }
+.features li{ padding:7px 0; border-bottom:1px solid rgba(255,255,255,0.08); font-size:14px; }
+.features li::before{ content:'✔  '; color:#22c55e; }
+ 
+.btn{ width:100%; padding:13px; border:none; border-radius:30px; font-size:15px; font-weight:600; cursor:pointer; transition:0.3s; }
+.btn-green{ background:#22c55e; color:#020617; }
+.btn-green:hover{ box-shadow:0 8px 25px rgba(34,197,94,0.6); transform:translateY(-2px); }
+.btn-outline{ background:transparent; border:2px solid #22c55e; color:#22c55e; }
+.btn-outline:hover{ background:#22c55e; color:#020617; }
+.btn-active{ background:#f59e0b22; border:2px solid #f59e0b; color:#f59e0b; cursor:default; }
+ 
+/* Success Modal */
+.modal-overlay{ display:none; position:fixed; inset:0; background:rgba(0,0,0,0.75); z-index:9999; align-items:center; justify-content:center; }
+.modal-overlay.show{ display:flex; }
+.modal{ background:#0f172a; border:1px solid #22c55e; border-radius:20px; padding:50px 40px; text-align:center; max-width:380px; animation:popIn 0.4s ease; }
+@keyframes popIn{ from{transform:scale(0.8);opacity:0;} to{transform:scale(1);opacity:1;} }
+.modal .tick{ font-size:60px; }
+.modal h2{ margin:15px 0 8px; }
+.modal p{ opacity:0.75; margin-bottom:25px; }
+.modal button{ padding:12px 30px; background:#22c55e; border:none; border-radius:25px; font-weight:600; cursor:pointer; font-size:15px; }
+ 
+/* Toast */
+#toast{ position:fixed; bottom:30px; right:30px; background:#1e293b; border:1px solid #22c55e44; color:white; padding:14px 22px; border-radius:10px; font-size:14px; display:none; z-index:10000; }
+</style>
+</head>
+<body>
+ 
+<nav>
+  <div class="logo"><span class="material-icons" style="vertical-align:middle;font-size:20px">fitness_center</span> Fit<span>Fuel</span></div>
+  <div>
+    <a href="home.html">Home</a>
+    <a href="profile.html">My Profile</a>
+    <a href="#" id="nav-user" style="color:#22c55e;font-weight:600"></a>
+  </div>
+</nav>
+ 
+<div class="page-hero">
+  <h1>Choose Your <span>Plan</span></h1>
+  <p>Upgrade your fitness journey. Cancel anytime.</p>
+</div>
+ 
+<!-- Login Prompt (if not logged in) -->
+<div id="login-prompt">
+  <p>Please sign in to purchase a plan.</p>
+  <a href="login.html">Login</a>
+  <a href="register.html" class="outline">Register</a>
+</div>
+ 
+<!-- Current Plan -->
+<div id="current-plan-box">
+  <div class="badge">🟢 Active Plan: <span id="active-plan-name">Basic</span> &nbsp;|&nbsp; Expires: <span id="plan-expiry">-</span></div>
+</div>
+ 
+<!-- Plan Cards -->
+<section class="plans-section">
+  <div class="plan-grid">
+ 
+    <!-- BASIC -->
+    <div class="plan-card" id="card-basic">
+      <div class="plan-icon">🌱</div>
+      <h3>Basic Plan</h3>
+      <div class="price">₹0 <sub>/ forever</sub></div>
+      <ul class="features">
+        <li>Free workout tips</li>
+        <li>Basic diet guide</li>
+        <li>BMI & calorie tracker</li>
+        <li>Community access</li>
+      </ul>
+      <button class="btn btn-outline" onclick="choosePlan('basic')">Get Started Free</button>
+    </div>
+ 
+    <!-- PRO -->
+    <div class="plan-card featured" id="card-pro">
+      <div class="badge-top">⭐ Most Popular</div>
+      <div class="plan-icon">🏋️</div>
+      <h3>Pro Plan</h3>
+      <div class="price">₹999 <sub>/ month</sub></div>
+      <ul class="features">
+        <li>Personalized workout plan</li>
+        <li>Custom diet chart</li>
+        <li>Monthly progress tracking</li>
+        <li>Priority support</li>
+        <li>All Basic features</li>
+      </ul>
+      <button class="btn btn-green" onclick="choosePlan('pro')">Pay ₹999 / Month</button>
+    </div>
+ 
+    <!-- ELITE -->
+    <div class="plan-card" id="card-elite">
+      <div class="plan-icon">👑</div>
+      <h3>Elite Plan</h3>
+      <div class="price">₹2499 <sub>/ month</sub></div>
+      <ul class="features">
+        <li>1-on-1 personal coaching</li>
+        <li>Live training sessions</li>
+        <li>Weekly performance review</li>
+        <li>Meal prep guidance</li>
+        <li>All Pro features</li>
+      </ul>
+      <button class="btn btn-green" onclick="choosePlan('elite')">Pay ₹2499 / Month</button>
+    </div>
+ 
+  </div>
+</section>
+ 
+<!-- Success Modal -->
+<div class="modal-overlay" id="success-modal">
+  <div class="modal">
+    <div class="tick">✅</div>
+    <h2>Payment Successful!</h2>
+    <p id="modal-msg">Your plan has been activated.</p>
+    <button onclick="location.href='profile.html'">Go to Profile</button>
+  </div>
+</div>
+ 
+<div id="toast"></div>
+ 
+<script>
+const API = 'http://localhost:3000';
+let currentUser = null;
+let activePlan  = 'basic';
+ 
+window.onload = async function() {
+  const stored = localStorage.getItem('user');
+  if (!stored) {
+    document.getElementById('login-prompt').style.display = 'block';
+    disablePayButtons();
+    return;
+  }
+  currentUser = JSON.parse(stored);
+  document.getElementById('nav-user').textContent = '👤 ' + currentUser.name;
+  await loadActivePlan();
+};
+ 
+async function loadActivePlan() {
+  try {
+    const res  = await fetch(`${API}/my-plan?userId=${currentUser.userId}`);
+    const data = await res.json();
+    activePlan = data.plan || 'basic';
+ 
+    const labels = { basic:'Basic', pro:'Pro', elite:'Elite' };
+    document.getElementById('active-plan-name').textContent = labels[activePlan] || activePlan;
+ 
+    if (data.expires_at) {
+      const d = new Date(data.expires_at);
+      document.getElementById('plan-expiry').textContent =
+        d.getFullYear() > 2100 ? 'Lifetime' :
+        d.toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' });
+    }
+    document.getElementById('current-plan-box').style.display = 'block';
+    highlightActiveCard(activePlan);
+  } catch(e) { console.error(e); }
+}
+ 
+function highlightActiveCard(plan) {
+  ['basic','pro','elite'].forEach(p => {
+    const card = document.getElementById('card-' + p);
+    card.classList.remove('current-active');
+    if (p === plan) {
+      card.classList.add('current-active');
+      // Add active badge
+      const existing = card.querySelector('.active-badge-top');
+      if (!existing) {
+        const ab = document.createElement('div');
+        ab.className = 'active-badge-top';
+        ab.textContent = '✔ Your Current Plan';
+        card.prepend(ab);
+      }
+      // Disable button
+      const btn = card.querySelector('.btn');
+      btn.className = 'btn btn-active';
+      btn.textContent = 'Current Plan';
+      btn.onclick = null;
+    }
+  });
+}
+ 
+async function choosePlan(plan) {
+  if (!currentUser) {
+    document.getElementById('login-prompt').style.display = 'block';
+    document.getElementById('login-prompt').scrollIntoView({ behavior:'smooth' });
+    return;
+  }
+  if (plan === activePlan) { showToast('This is already your active plan!'); return; }
+ 
+  showToast('Processing...');
+ 
+  const res  = await fetch(`${API}/create-order`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ userId: currentUser.userId, plan })
+  });
+  const order = await res.json();
+ 
+  if (order.error) { showToast('❌ ' + order.error); return; }
+ 
+  // Free plan (Basic)
+  if (order.free) {
+    activePlan = plan;
+    await loadActivePlan();
+    showSuccess('Basic plan activated!');
+    return;
+  }
+ 
+  // Paid plan — open Razorpay
+  const rzp = new Razorpay({
+    key:         order.key_id,
+    amount:      order.amount,
+    currency:    order.currency,
+    name:        'FitFuel',
+    description: order.planName,
+    order_id:    order.orderId,
+    prefill:     { name: currentUser.name, email: currentUser.email },
+    theme:       { color: '#22c55e' },
+    handler: async function(response) {
+      const verify = await fetch(`${API}/verify-payment`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          razorpay_order_id:   response.razorpay_order_id,
+          razorpay_payment_id: response.razorpay_payment_id,
+          razorpay_signature:  response.razorpay_signature,
+          userId: currentUser.userId,
+          plan
+        })
+      });
+      const result = await verify.json();
+      if (result.success) {
+        activePlan = plan;
+        await loadActivePlan();
+        showSuccess(`🎉 ${result.planName} activated successfully!`);
+      } else {
+        showToast('❌ ' + (result.error || 'Verification failed'));
+      }
+    },
+    modal: { ondismiss: () => showToast('Payment cancelled.') }
+  });
+  rzp.open();
+}
+ 
+function disablePayButtons() {
+  document.querySelectorAll('.btn-green, .btn-outline').forEach(b => {
+    b.textContent = 'Login to Continue';
+    b.onclick = () => location.href = 'login.html';
+  });
+}
+ 
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.style.display = 'block';
+  setTimeout(() => t.style.display = 'none', 3000);
+}
+ 
+function showSuccess(msg) {
+  document.getElementById('modal-msg').textContent = msg;
+  document.getElementById('success-modal').classList.add('show');
+}
+</script>
+</body>
+</html>

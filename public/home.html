@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>FitFuel | Gym Diet & Fitness</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+body{ background:#020617; color:white; scroll-behavior:smooth; }
+ 
+/* NAVBAR */
+nav{
+  position:fixed; top:0; width:100%;
+  display:flex; justify-content:flex-end; align-items:center;
+  padding:20px 50px; background:rgba(2,6,23,0.85); backdrop-filter:blur(12px); z-index:1000;
+}
+.logo{ position:absolute; left:50px; display:flex; align-items:center; gap:8px; font-size:24px; font-weight:600; }
+.logo span{ color:#22c55e; }
+nav a{ color:white; text-decoration:none; margin-left:25px; transition:0.3s; font-size:15px; }
+nav a:hover{ color:#22c55e; }
+#nav-user{ color:#22c55e; font-weight:600; font-size:14px; margin-left:25px; }
+ 
+/* HERO */
+.hero{
+  height:100vh;
+  background: linear-gradient(rgba(2,6,23,0.7),rgba(2,6,23,0.95)),
+    url("https://images.unsplash.com/photo-1517836357463-d25dfeac3438");
+  background-size:cover; background-position:center;
+  display:flex; flex-direction:column; justify-content:center;
+  align-items:center; text-align:center; animation:fadeIn 1.2s ease;
+}
+.hero h1{ font-size:52px; }
+.hero h1 span{ color:#22c55e; }
+.hero p{ margin:15px 0; max-width:600px; opacity:0.85; }
+.hero button{
+  padding:14px 35px; border:none; border-radius:30px;
+  background:#22c55e; font-size:16px; font-weight:600; cursor:pointer; transition:0.3s;
+}
+.hero button:hover{ box-shadow:0 10px 25px rgba(34,197,94,0.6); transform:translateY(-3px); }
+@keyframes fadeIn{ from{opacity:0;transform:translateY(30px);} to{opacity:1;transform:translateY(0);} }
+ 
+/* SECTIONS */
+section{ padding:100px 10%; }
+section h2{ text-align:center; margin-bottom:60px; font-size:36px; }
+ 
+/* CARDS */
+.program-grid{ display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:30px; }
+.program-card{
+  background:rgba(255,255,255,0.05); backdrop-filter:blur(15px);
+  border:1px solid rgba(255,255,255,0.25); border-radius:16px;
+  padding:30px; transition:0.4s; text-align:center;
+}
+.program-card:hover{ transform:translateY(-10px); box-shadow:0 20px 40px rgba(34,197,94,0.35); }
+.program-card.active{ border:1px solid #22c55e; box-shadow:0 20px 50px rgba(34,197,94,0.4); }
+.program-card h3{ margin:15px 0; color:#22c55e; }
+.program-card p{ font-size:14px; opacity:0.9; margin:6px 0; }
+.program-card a{
+  display:inline-block; margin-top:15px; padding:10px 22px;
+  border-radius:25px; background:#22c55e; color:#020617;
+  font-weight:600; text-decoration:none; transition:0.3s;
+}
+.program-card a:hover{ background:white; }
+.program-card h2{ font-size:24px; margin:12px 0; }
+ 
+/* TRAINER IMG */
+.trainer-img{ width:100%; height:260px; object-fit:cover; border-radius:12px; margin-bottom:15px; }
+ 
+footer{ text-align:center; padding:25px; border-top:1px solid #1e293b; opacity:0.7; }
+</style>
+</head>
+<body>
+ 
+<nav>
+  <div class="logo">
+    <span class="material-icons">fitness_center</span>
+    Fit<span>Fuel</span>
+  </div>
+  <a href="#home">Home</a>
+  <a href="#explore">Programs</a>
+  <a href="#trainers">Trainers</a>
+  <a href="#plans">Plans</a>
+  <span id="nav-user"></span>
+  <a href="login.html"    id="nav-login">Login</a>
+  <a href="register.html" id="nav-register">Register</a>
+  <a href="profile.html"  id="nav-profile" style="display:none">My Profile</a>
+  <a href="#" id="nav-logout" style="display:none;color:#ef4444;" onclick="logout()">Logout</a>
+</nav>
+ 
+<!-- HERO -->
+<div class="hero" id="home">
+  <h1>Transform Your Body <span>With FitFuel</span></h1>
+  <p>Gym diet plans, expert trainers, and science-backed workouts.</p>
+  <button onclick="location.href='plans.html'">Start Your Journey</button>
+</div>
+ 
+<!-- PROGRAMS -->
+<section id="explore">
+  <h2>Explore Programs</h2>
+  <div class="program-grid">
+    <div class="program-card active">
+      <h3>🏋️ Strength Training</h3>
+      <p>Build muscle and increase power.</p>
+      <a href="strengthtraining.html">Join Now</a>
+    </div>
+    <div class="program-card">
+      <h3>🏃 Cardio Training</h3>
+      <p>Boost stamina and burn calories.</p>
+      <a href="cardio.html">Join Now</a>
+    </div>
+    <div class="program-card">
+      <h3>🔥 Fat Burning</h3>
+      <p>High intensity fat loss programs.</p>
+      <a href="fatburning.html">Join Now</a>
+    </div>
+    <div class="program-card">
+      <h3>❤️ Heart Fitness</h3>
+      <p>Improve cardiovascular health.</p>
+      <a href="heart_fitness.html">Join Now</a>
+    </div>
+  </div>
+</section>
+ 
+<!-- TRAINERS -->
+<section id="trainers">
+  <h2>Our Trainers</h2>
+  <div class="program-grid">
+    <div class="program-card">
+      <img src="https://www.shutterstock.com/image-photo/focused-emotional-young-girl-performing-600w-2654817401.jpg" class="trainer-img">
+      <h3>Arjun Mehta</h3>
+      <p>Strength Coach (8+ yrs)</p>
+      <p>Muscle gain & powerlifting expert.</p>
+    </div>
+    <div class="program-card">
+      <img src="https://images.unsplash.com/photo-1605296867304-46d5465a13f1" class="trainer-img">
+      <h3>Neha Sharma</h3>
+      <p>Certified Nutritionist</p>
+      <p>Custom diet & fat loss specialist.</p>
+    </div>
+    <div class="program-card">
+      <img src="https://images.unsplash.com/photo-1550345332-09e3ac987658" class="trainer-img">
+      <h3>Rohit Verma</h3>
+      <p>Functional Trainer</p>
+      <p>HIIT & endurance transformation coach.</p>
+    </div>
+  </div>
+</section>
+ 
+<!-- PLANS -->
+<section id="plans">
+  <h2>Membership Plans</h2>
+  <div class="program-grid">
+ 
+    <div class="program-card">
+      <h3>🌱 Basic Plan</h3>
+      <p>✔ Free workout tips</p>
+      <p>✔ Basic diet guide</p>
+      <p>✔ BMI & calorie tracker</p>
+      <p>✔ Community access</p>
+      <h2>₹0 / Month</h2>
+      <a href="plans.html">Get Started</a>
+    </div>
+ 
+    <div class="program-card active">
+      <h3>🏋️ Pro Plan</h3>
+      <p>✔ Personalized workout</p>
+      <p>✔ Custom diet chart</p>
+      <p>✔ Monthly tracking</p>
+      <p>✔ Priority support</p>
+      <h2>₹999 / Month</h2>
+      <a href="plans.html">Pay Now</a>
+    </div>
+ 
+    <div class="program-card">
+      <h3>👑 Elite Plan</h3>
+      <p>✔ 1-on-1 coaching</p>
+      <p>✔ Live sessions</p>
+      <p>✔ Weekly review</p>
+      <p>✔ Meal prep guidance</p>
+      <h2>₹2499 / Month</h2>
+      <a href="plans.html">Pay Now</a>
+    </div>
+ 
+  </div>
+</section>
+ 
+<footer>© 2025 FitFuel. All rights reserved.</footer>
+ 
+<script>
+// Show logged-in user in navbar
+window.onload = function() {
+  const stored = localStorage.getItem('user');
+  if (stored) {
+    const user = JSON.parse(stored);
+    document.getElementById('nav-user').textContent     = '👤 ' + user.name;
+    document.getElementById('nav-login').style.display    = 'none';
+    document.getElementById('nav-register').style.display = 'none';
+    document.getElementById('nav-profile').style.display  = 'inline';
+    document.getElementById('nav-logout').style.display   = 'inline';
+  }
+};
+ 
+function logout() {
+  localStorage.removeItem('user');
+  location.reload();
+}
+</script>
+</body>
+</html>
+ 

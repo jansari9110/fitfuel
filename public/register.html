@@ -1,0 +1,138 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Register | FitFuel</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{ margin:0; padding:0; box-sizing:border-box; font-family:'Poppins',sans-serif; }
+body{
+  min-height:100vh;
+  background: linear-gradient(rgba(2,6,23,0.85),rgba(2,6,23,0.95)),
+    url("https://images.unsplash.com/photo-1554284126-aa88f22d8b74");
+  background-size:cover; background-position:center;
+  color:white; display:flex; flex-direction:column;
+}
+nav{ width:100%; padding:20px 60px; background:rgba(2,6,23,0.85); backdrop-filter:blur(10px); display:flex; justify-content:space-between; align-items:center; }
+.logo{ font-size:24px; font-weight:600; }
+.logo span{ color:#22c55e; }
+.container{ flex:1; display:flex; justify-content:center; align-items:center; }
+.form-box{
+  width:380px; padding:40px;
+  background:rgba(255,255,255,0.06); backdrop-filter:blur(15px);
+  border:1px solid rgba(255,255,255,0.25); border-radius:20px;
+  box-shadow:0 20px 50px rgba(0,0,0,0.6); text-align:center;
+}
+.form-box h2{ margin-bottom:25px; color:#22c55e; }
+input{
+  width:100%; padding:12px; margin:10px 0;
+  border:1px solid rgba(255,255,255,0.2); border-radius:8px;
+  outline:none; background:rgba(0,0,0,0.3); color:white; font-size:14px;
+}
+input::placeholder{ color:rgba(255,255,255,0.5); }
+input:focus{ border-color:#22c55e; box-shadow:0 0 8px rgba(34,197,94,0.4); }
+button{
+  width:100%; padding:12px; margin-top:15px; border:none;
+  border-radius:30px; font-weight:600; background:#22c55e;
+  color:black; cursor:pointer; transition:0.3s; font-size:15px;
+}
+button:hover{ box-shadow:0 10px 25px rgba(34,197,94,0.6); }
+button:disabled{ opacity:0.6; cursor:not-allowed; }
+.message{ margin-top:15px; font-size:14px; min-height:20px; }
+.back-link{ margin-top:20px; display:block; color:#22c55e; text-decoration:none; font-size:14px; }
+</style>
+</head>
+<body>
+<nav>
+  <div class="logo">Fit<span>Fuel</span></div>
+  <a href="login.html" style="color:#22c55e;text-decoration:none;">Login</a>
+</nav>
+<div class="container">
+  <div class="form-box">
+    <h2>Create Account</h2>
+    <input id="nameInput"     placeholder="Full Name">
+    <input id="emailInput"    placeholder="Email" type="email">
+    <input id="passwordInput" placeholder="Password" type="password">
+    <button id="regBtn" onclick="register()">Register</button>
+    <p id="msg" class="message"></p>
+    <a href="login.html" class="back-link">Already have an account? Login</a>
+  </div>
+</div>
+<script>
+const API = "http://localhost:3000";
+ 
+function register() {
+  const nameVal  = document.getElementById('nameInput').value.trim();
+  const emailVal = document.getElementById('emailInput').value.trim();
+  const passVal  = document.getElementById('passwordInput').value.trim();
+  const msg      = document.getElementById('msg');
+  const btn      = document.getElementById('regBtn');
+ 
+  // Validation
+  if (!nameVal || !emailVal || !passVal) {
+    msg.innerText = "❌ Please fill all fields.";
+    msg.style.color = "red";
+    return;
+  }
+  if (!emailVal.includes('@')) {
+    msg.innerText = "❌ Enter a valid email.";
+    msg.style.color = "red";
+    return;
+  }
+ 
+  btn.disabled = true;
+  btn.textContent = "Registering...";
+  msg.innerText = "";
+ 
+  fetch(API + "/register", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ name: nameVal, email: emailVal, password: passVal })
+  })
+  .then(res => res.json())
+  .then(data => {
+    btn.disabled = false;
+    btn.textContent = "Register";
+ 
+    if (data.success) {
+      msg.innerText = "✅ Account created! Logging you in...";
+      msg.style.color = "#22c55e";
+ 
+      // Auto login right after register
+      fetch(API + "/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: emailVal, password: passVal })
+      })
+      .then(r => r.json())
+      .then(loginData => {
+        if (loginData.userId) {
+          localStorage.setItem('user', JSON.stringify({
+            userId: loginData.userId,
+            name:   loginData.name,
+            email:  loginData.email
+          }));
+          setTimeout(() => { location.href = "profile.html"; }, 800);
+        } else {
+          setTimeout(() => { location.href = "login.html"; }, 800);
+        }
+      });
+    } else {
+      msg.innerText = "❌ " + (data.error || "Registration failed.");
+      msg.style.color = "red";
+    }
+  })
+  .catch(() => {
+    btn.disabled = false;
+    btn.textContent = "Register";
+    msg.innerText = "❌ Cannot connect to server. Make sure server is running.";
+    msg.style.color = "red";
+  });
+}
+ 
+// Press Enter to submit
+document.addEventListener('keypress', e => { if (e.key === 'Enter') register(); });
+</script>
+</body>
+</html>
+ 

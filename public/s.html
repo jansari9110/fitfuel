@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Fitness Suggestions | FitFuel</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body{
+  font-family:'Poppins', sans-serif;
+  background:#0f172a;
+  color:white;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  height:100vh;
+}
+
+.box{
+  width:450px;
+  padding:30px;
+  background:rgba(255,255,255,0.05);
+  border-radius:15px;
+  text-align:center;
+}
+
+button{
+  margin-top:20px;
+  padding:10px 20px;
+  border:none;
+  border-radius:20px;
+  cursor:pointer;
+  background:#22c55e;
+  color:white;
+}
+</style>
+</head>
+
+<body>
+
+<div class="box">
+  <h2>Fitness Suggestions</h2>
+  <p id="result"></p>
+
+  <button onclick="goBack()">⬅ Back</button>
+</div>
+
+<script>
+
+const data = JSON.parse(localStorage.getItem("profileData"));
+
+if(!data){
+  window.location.href = "profile.html";
+}
+
+let suggestion = "Hello " + data.name + ". ";
+suggestion += "Your BMI is " + data.bmi + ". ";
+
+if(data.bmi < 18.5){
+  suggestion += "You are underweight. Focus on strength training and high-protein diet. ";
+}
+else if(data.bmi >= 18.5 && data.bmi < 25){
+  suggestion += "You have normal BMI. Maintain balanced diet and regular exercise. ";
+}
+else if(data.bmi >= 25 && data.bmi < 30){
+  suggestion += "You are overweight. Focus on cardio and calorie control. ";
+}
+else{
+  suggestion += "Obesity range. Start structured workout and clean eating plan. ";
+}
+
+if(data.gender === "female"){
+  suggestion += "Include iron-rich foods and moderate cardio.";
+} else {
+  suggestion += "Focus on muscle-building workouts and protein intake.";
+}
+
+document.getElementById("result").innerText = suggestion;
+
+function goBack(){
+  window.location.href = "profile.html";
+}
+
+</script>
+
+</body>
+</html>
