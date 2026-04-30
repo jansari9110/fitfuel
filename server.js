@@ -25,8 +25,8 @@ db.connect(err => {
  
 /* ── RAZORPAY ─────────────────────────────────────────────────── */
 const razorpay = new Razorpay({
-  key_id:     process.env.RAZORPAY_KEY_ID     || 'rzp_test_SjVxjKUcJg9FaT',
-  key_secret: process.env.RAZORPAY_KEY_SECRET || '9ykEXc0tZK9BdayPkIxaWQyj'
+  key_id:     process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET 
 });
  
 /* ── PLAN CONFIG ──────────────────────────────────────────────── */
