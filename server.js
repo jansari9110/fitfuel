@@ -1,8 +1,8 @@
-const express = require('express');
-const mysql   = require('mysql2');
-const bcrypt  = require('bcrypt');
-const cors    = require('cors');
-const crypto  = require('crypto');
+const express  = require('express');
+const mysql    = require('mysql2');
+const bcrypt   = require('bcrypt');
+const cors     = require('cors');
+const crypto   = require('crypto');
 const Razorpay = require('razorpay');
  
 const app = express();
@@ -10,12 +10,12 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
  
-/* ── DATABASE ────────────────────────────────────────────────── */
+/* ── DATABASE ─────────────────────────────────────────────────── */
 const db = mysql.createConnection({
   host:     process.env.DB_HOST     || 'localhost',
   port:     process.env.DB_PORT     || 3306,
   user:     process.env.DB_USER     || 'root',
-  password: process.env_DB_PASSWORD || 'your_new_password',       // your MySQL password
+  password: process.env.DB_PASSWORD || 'anmol',
   database: process.env.DB_NAME     || 'fitfuel'
 });
 db.connect(err => {
@@ -23,20 +23,20 @@ db.connect(err => {
   console.log('MySQL Connected');
 });
  
-/* ── RAZORPAY  (paste your keys from razorpay.com dashboard) ── */
+/* ── RAZORPAY ─────────────────────────────────────────────────── */
 const razorpay = new Razorpay({
-  key_id:     'rzp_test_SjW7tGNsR0LYU8',   // ← Replace
-  key_secret: '4wh7465niO9d4o0fLZV0WMAw'     // ← Replace
+  key_id:     process.env.RAZORPAY_KEY_ID     || 'rzp_test_SjVxjKUcJg9FaT',
+  key_secret: process.env.RAZORPAY_KEY_SECRET || '9ykEXc0tZK9BdayPkIxaWQyj'
 });
  
-/* ── PLAN CONFIG ─────────────────────────────────────────────── */
+/* ── PLAN CONFIG ──────────────────────────────────────────────── */
 const PLANS = {
-  basic: { name:'Basic Plan',  amount:0,      days:36500 },
-  pro:   { name:'Pro Plan',    amount:99900,  days:30    },  // ₹999
-  elite: { name:'Elite Plan',  amount:249900, days:30    }   // ₹2499
+  basic: { name: 'Basic Plan',  amount: 0,      days: 36500 },
+  pro:   { name: 'Pro Plan',    amount: 99900,  days: 30    },
+  elite: { name: 'Elite Plan',  amount: 249900, days: 30    }
 };
  
-/* ── AUTO CREATE TABLES ──────────────────────────────────────── */
+/* ── AUTO CREATE TABLES ───────────────────────────────────────── */
 db.query(`CREATE TABLE IF NOT EXISTS users (
   id         INT AUTO_INCREMENT PRIMARY KEY,
   name       VARCHAR(100) NOT NULL,
@@ -47,8 +47,12 @@ db.query(`CREATE TABLE IF NOT EXISTS users (
  
 db.query(`CREATE TABLE IF NOT EXISTS profiles (
   user_id  INT PRIMARY KEY,
-  age      INT, height FLOAT, weight FLOAT,
-  gender   VARCHAR(10), activity VARCHAR(20), goal VARCHAR(20),
+  age      INT,
+  height   FLOAT,
+  weight   FLOAT,
+  gender   VARCHAR(10),
+  activity VARCHAR(20),
+  goal     VARCHAR(20),
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 )`);
  
@@ -63,9 +67,9 @@ db.query(`CREATE TABLE IF NOT EXISTS subscriptions (
   expires_at          DATETIME,
   created_at          DATETIME DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-)`, err => { if(!err) console.log('All tables ready'); });
+)`, err => { if (!err) console.log('All tables ready'); });
  
-/* ── REGISTER ────────────────────────────────────────────────── */
+/* ── REGISTER ─────────────────────────────────────────────────── */
 app.post('/register', async (req, res) => {
   const { name, email, password } = req.body;
   if (!name || !email || !password)
@@ -78,8 +82,6 @@ app.post('/register', async (req, res) => {
       [name, email, hash],
       (err, result) => {
         if (err) return res.json({ error: 'Email already registered' });
- 
-        // Give new user a free Basic plan
         db.query(
           `INSERT INTO subscriptions(user_id,plan,status,starts_at,expires_at)
            VALUES(?,'basic','active',NOW(),DATE_ADD(NOW(),INTERVAL 36500 DAY))`,
@@ -93,7 +95,7 @@ app.post('/register', async (req, res) => {
   }
 });
  
-/* ── LOGIN ───────────────────────────────────────────────────── */
+/* ── LOGIN ────────────────────────────────────────────────────── */
 app.post('/login', (req, res) => {
   const { email, password } = req.body;
   if (!email || !password)
@@ -101,15 +103,13 @@ app.post('/login', (req, res) => {
  
   db.query('SELECT * FROM users WHERE email=?', [email], async (err, rows) => {
     if (err || !rows.length) return res.json({ error: 'User not found' });
- 
     const ok = await bcrypt.compare(password, rows[0].password);
     if (!ok) return res.json({ error: 'Wrong password' });
- 
     res.json({ userId: rows[0].id, name: rows[0].name, email: rows[0].email });
   });
 });
  
-/* ── SAVE PROFILE ────────────────────────────────────────────── */
+/* ── SAVE PROFILE ─────────────────────────────────────────────── */
 app.post('/profile', (req, res) => {
   const { userId, age, height, weight, gender, activity, goal } = req.body;
   db.query('DELETE FROM profiles WHERE user_id=?', [userId], () => {
@@ -121,14 +121,14 @@ app.post('/profile', (req, res) => {
   });
 });
  
-/* ── DIET CALCULATION ────────────────────────────────────────── */
+/* ── DIET CALCULATION ─────────────────────────────────────────── */
 app.post('/diet', (req, res) => {
   const { age, height, weight, gender, activity, goal } = req.body;
   let bmr = gender === 'male'
-    ? 10*weight + 6.25*height - 5*age + 5
-    : 10*weight + 6.25*height - 5*age - 161;
+    ? 10 * weight + 6.25 * height - 5 * age + 5
+    : 10 * weight + 6.25 * height - 5 * age - 161;
  
-  const act = { low:1.2, medium:1.55, high:1.9 };
+  const act = { low: 1.2, medium: 1.55, high: 1.9 };
   let calories = bmr * (act[activity] || 1.2);
   if (goal === 'bulk') calories += 300;
   if (goal === 'cut')  calories -= 300;
@@ -141,10 +141,10 @@ app.post('/diet', (req, res) => {
   });
 });
  
-/* ── GET MY PLAN ─────────────────────────────────────────────── */
+/* ── GET MY PLAN ──────────────────────────────────────────────── */
 app.get('/my-plan', (req, res) => {
   const { userId } = req.query;
-  if (!userId) return res.json({ plan:'basic', status:'active' });
+  if (!userId) return res.json({ plan: 'basic', status: 'active' });
  
   db.query(
     `SELECT plan, status, starts_at, expires_at
@@ -152,33 +152,32 @@ app.get('/my-plan', (req, res) => {
      ORDER BY created_at DESC LIMIT 1`,
     [userId],
     (err, rows) => {
-      if (err || !rows.length) return res.json({ plan:'basic', status:'active' });
+      if (err || !rows.length) return res.json({ plan: 'basic', status: 'active' });
       const sub = rows[0];
       if (sub.expires_at && new Date(sub.expires_at) < new Date()) {
         db.query("UPDATE subscriptions SET status='expired' WHERE user_id=?", [userId]);
-        return res.json({ plan:'basic', status:'active' });
+        return res.json({ plan: 'basic', status: 'active' });
       }
       res.json(sub);
     }
   );
 });
  
-/* ── CREATE RAZORPAY ORDER ───────────────────────────────────── */
+/* ── CREATE RAZORPAY ORDER ────────────────────────────────────── */
 app.post('/create-order', async (req, res) => {
   const { userId, plan } = req.body;
-  if (!PLANS[plan]) return res.json({ error:'Invalid plan' });
-  if (!userId)      return res.json({ error:'Please login first' });
+  if (!PLANS[plan]) return res.json({ error: 'Invalid plan' });
+  if (!userId)      return res.json({ error: 'Please login first' });
  
   const planInfo = PLANS[plan];
  
-  // Basic plan is free
   if (planInfo.amount === 0) {
     db.query("UPDATE subscriptions SET status='expired' WHERE user_id=?", [userId], () => {
       db.query(
         `INSERT INTO subscriptions(user_id,plan,status,starts_at,expires_at)
          VALUES(?,'basic','active',NOW(),DATE_ADD(NOW(),INTERVAL 36500 DAY))`,
         [userId],
-        () => res.json({ success:true, free:true })
+        () => res.json({ success: true, free: true })
       );
     });
     return;
@@ -207,11 +206,11 @@ app.post('/create-order', async (req, res) => {
     });
   } catch(e) {
     console.error('Razorpay error:', e.message);
-    res.json({ error:'Could not create order. Check Razorpay keys in server.js' });
+    res.json({ error: 'Could not create order. Check Razorpay keys.' });
   }
 });
  
-/* ── VERIFY PAYMENT & ACTIVATE ───────────────────────────────── */
+/* ── VERIFY PAYMENT ───────────────────────────────────────────── */
 app.post('/verify-payment', (req, res) => {
   const { razorpay_order_id, razorpay_payment_id, razorpay_signature, userId, plan } = req.body;
  
@@ -221,7 +220,7 @@ app.post('/verify-payment', (req, res) => {
     .digest('hex');
  
   if (expected !== razorpay_signature)
-    return res.json({ error:'Payment verification failed' });
+    return res.json({ error: 'Payment verification failed' });
  
   const planInfo = PLANS[plan];
  
@@ -233,12 +232,14 @@ app.post('/verify-payment', (req, res) => {
        WHERE razorpay_order_id=?`,
       [razorpay_payment_id, planInfo.days, razorpay_order_id],
       err => {
-        if (err) return res.json({ error:'DB update failed' });
-        res.json({ success:true, plan, planName:planInfo.name });
+        if (err) return res.json({ error: 'DB update failed' });
+        res.json({ success: true, plan, planName: planInfo.name });
       }
     );
   });
 });
  
+/* ── START SERVER ─────────────────────────────────────────────── */
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => console.log('Server running on port ' + PORT));
+ 
